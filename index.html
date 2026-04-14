@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Comparison: Part One</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --neon-green: #39ff14;
+            --white: #ffffff;
+            --border-color: #333333;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-dark);
+            color: var(--neon-green);
+            padding: 1rem;
+            margin: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { 
+            text-transform: uppercase; 
+            color: var(--white);
+            border-bottom: 2px solid var(--neon-green); 
+            padding-bottom: 0.5rem;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .controls { 
+            margin: 1.5rem 0; 
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px; 
+            width: 100%;
+            max-width: 500px;
+        }
+
+        button {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        button:hover { 
+            background: var(--neon-green); 
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        .btn-clear {
+            border-color: var(--white);
+            color: var(--white);
+        }
+
+        .btn-clear:hover {
+            background: var(--white);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--white);
+        }
+
+        table {
+            width: 100%;
+            max-width: 900px;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: var(--bg-card);
+        }
+
+        @media screen and (max-width: 600px) {
+            thead { display: none; }
+            
+            tr {
+                display: block;
+                border: 1px solid var(--border-color);
+                margin-bottom: 1rem;
+                padding: 10px;
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                border: none !important;
+                padding: 8px 0;
+                text-align: right;
+            }
+
+            td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: var(--white);
+                text-transform: uppercase;
+                margin-right: 10px;
+            }
+        }
+
+        @media screen and (min-width: 601px) {
+            .controls {
+                grid-template-columns: 1fr 1fr 0.5fr;
+            }
+
+            th, td {
+                border: 1px solid var(--border-color);
+                padding: 15px;
+                text-align: left;
+            }
+
+            th { 
+                background: var(--white); 
+                color: var(--bg-dark);
+                text-transform: uppercase;
+            }
+        }
+
+        .status { 
+            margin-top: 2rem; 
+            font-style: italic; 
+            color: var(--white);
+            background: #252525;
+            padding: 5px 15px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Product Comparison</h1>
+
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+
+    <div id="statusMsg" class="status">System idle. Table empty.</div>
+    
+    <div class="controls">
+        <button onclick="renderWithInnerHTML()">Load via innerHTML</button>
+        <button onclick="renderWithDOM()">Load via Direct DOM</button>
+        <button class="btn-clear" onclick="clearTable()">Clear Them All</button>
+    </div>
+
+    <script>
+        const products = [
+            { name: "Google Pixel 10 Pro XL", price: "₱70,597", category: "Gadgets" },
+            { name: "Apple MacBook Pro 14/16-inch (M5)", price: "₱112,990", category: "Hardware" },
+            { name: "Pixar Luxo Jr. lamp set", price: "₱11,356", category: "Furniture" },
+            { name: "Garmin Venu 4 ", price: "₱33,290", category: "Accessories" },
+            { name: "Pohopa EF-B210G", price: "₱14,100", category: "Electronics" },
+        ];
+
+        const tbody = document.getElementById('tableBody');
+        const statusMsg = document.getElementById('statusMsg');
+
+        function clearTable() {
+            tbody.innerHTML = '';
+            statusMsg.innerText = "Memory cleared.";
+        }
+
+        function renderWithInnerHTML() {
+            clearTable();
+            let htmlString = "";
+            
+            products.forEach(product => {
+                htmlString += `
+                    <tr>
+                        <td data-label="Product">${product.name}</td>
+                        <td data-label="Price">${product.price}</td>
+                        <td data-label="Category">${product.category}</td>
+                    </tr>`;
+            });
+            
+            tbody.innerHTML = htmlString;
+            statusMsg.innerText = "Rendered using innerHTML (String Injection).";
+        }
+
+        function renderWithDOM() {
+            clearTable();
+            
+            const labels = ["Product", "Price", "Category"];
+
+            products.forEach(product => {
+                const tr = document.createElement('tr');
+                const values = Object.values(product);
+
+                values.forEach((text, index) => {
+                    const td = document.createElement('td');
+                    td.textContent = text;
+                  
+                    td.setAttribute('data-label', labels[index]);
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+            
+            statusMsg.innerText = "Rendered using Direct DOM (Node Creation).";
+        }
+    </script>
+</body>
+</html>
